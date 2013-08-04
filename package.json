@@ -1,0 +1,46 @@
+{
+  "name": "esshorten",
+  "description": "Shorten (mangle) names in JavaScript code",
+  "main": "lib/esshorten.js",
+  "version": "0.0.1-dev",
+  "engines": {
+    "node": ">=0.6.0"
+  },
+  "directories": {
+    "lib": "./lib"
+  },
+  "maintainers": [
+    {
+      "name": "Yusuke Suzuki",
+      "email": "utatane.tea@gmail.com",
+      "web": "http://github.com/Constellation"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Constellation/esshorten.git"
+  },
+  "dependencies": {
+    "escope": "~ 0.0.14",
+    "estraverse": "~ 1.2.0"
+  },
+  "devDependencies": {
+    "chai": "*",
+    "commonjs-everywhere": "0.8.x",
+    "grunt": "~0.4.1",
+    "grunt-cli": "~0.1.7",
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-mocha-test": "~0.5.0"
+  },
+  "licenses": [
+    {
+      "type": "BSD",
+      "url": "http://github.com/Constellation/esshorten/raw/master/LICENSE.BSD"
+    }
+  ],
+  "scripts": {
+    "test": "grunt travis",
+    "lint": "grunt lint",
+    "unit-test": "grunt test"
+  }
+}
