@@ -22,7 +22,8 @@
   },
   "dependencies": {
     "escope": "~ 0.0.14",
-    "estraverse": "~ 1.2.0"
+    "estraverse": "~ 1.2.0",
+    "esutils": "~ 1.0.0"
   },
   "devDependencies": {
     "chai": "*",
