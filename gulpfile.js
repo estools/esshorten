@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2013 Yusuke Suzuki <utatane.tea@gmail.com>
+  Copyright (C) 2014 Yusuke Suzuki <utatane.tea@gmail.com>
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
@@ -10,7 +10,7 @@
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
 
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 'AS IS'
   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
   ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
@@ -22,38 +22,32 @@
   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-module.exports = function (grunt) {
-    'use strict';
+'use strict';
 
-    grunt.initConfig({
-        jshint: {
-            all: [
-                'Gruntfile.js',
-                'lib/**/*.js',
-                '*.js',
-            ],
-            options: {
-                jshintrc: '.jshintrc',
-                force: false
-            }
-        },
-        mochaTest: {
-            options: {
-                reporter: 'spec'
-            },
-            test: {
-                src: ['test/*.js']
-            }
-        }
-    });
+var gulp = require('gulp');
+var mocha = require('gulp-mocha');
+var jshint = require('gulp-jshint');
 
-    // load tasks
-    grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-mocha-test');
+// make mocha coffee test works
+require('coffee-script').register();
 
-    grunt.registerTask('test', 'mochaTest');
-    grunt.registerTask('lint', 'jshint');
-    grunt.registerTask('travis', ['lint', 'test']);
-    grunt.registerTask('default','travis');
-};
-/* vim: set sw=4 ts=4 et tw=80 : */
+var TEST = [ 'test/*.coffee' ];
+
+var LINT = [
+    'gulpfile.js',
+    'lib/*.js'
+];
+
+gulp.task('test', function () {
+    return gulp.src(TEST).pipe(mocha({ reporter: 'spec',  }));
+});
+
+gulp.task('lint', function () {
+    return gulp.src(LINT)
+        .pipe(jshint('.jshintrc'))
+        .pipe(jshint.reporter(require('jshint-stylish')))
+        .pipe(jshint.reporter('fail'));
+});
+
+gulp.task('travis', [ 'lint', 'test' ]);
+gulp.task('default', [ 'travis' ]);

@@ -14,7 +14,10 @@ And we can pass options to mangler,
 
 ```js
 esshorten.mangle(AST, {
-    destructive: false
+    // If true, AST is copied deeply (default: true)
+    destructive: false,
+    // If false, avoding [JSC bug](https://github.com/mozilla/sweet.js/issues/138) (default: false)
+    distinguishFunctionExpressionScope: false
 });
 ```
 
