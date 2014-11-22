@@ -18,7 +18,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "http://github.com/Constellation/esshorten.git"
+    "url": "http://github.com/estools/esshorten.git"
   },
   "dependencies": {
     "estraverse": "~1.5.0",
@@ -37,7 +37,7 @@
   "licenses": [
     {
       "type": "BSD",
-      "url": "http://github.com/Constellation/esshorten/raw/master/LICENSE.BSD"
+      "url": "http://github.com/estools/esshorten/raw/master/LICENSE.BSD"
     }
   ],
   "scripts": {
