@@ -21,8 +21,8 @@
     "url": "http://github.com/estools/esshorten.git"
   },
   "dependencies": {
+    "escope": "~3.3.0",
     "estraverse": "~4.1.1",
-    "escope": "~1.0.1",
     "esutils": "~2.0.2"
   },
   "devDependencies": {
