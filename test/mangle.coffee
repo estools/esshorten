@@ -24,63 +24,140 @@
 
 esshorten = require '../'
 expect = require('chai').expect
+esprima = require('esprima')
 
-describe 'mangle', ->
-    it 'function expression JSC bug', ->
-        program =
-            "type": "Program",
-            "body": [
-                {
-                    "type": "ExpressionStatement",
-                    "expression": {
-                        "type": "FunctionExpression",
-                        "id": {
-                            "type": "Identifier",
-                            "name": "name"
-                        },
-                        "params": [],
-                        "defaults": [],
-                        "body": {
-                            "type": "BlockStatement",
-                            "body": [
-                                {
-                                    "type": "VariableDeclaration",
-                                    "declarations": [
-                                        {
-                                            "type": "VariableDeclarator",
-                                            "id": {
-                                                "type": "Identifier",
-                                                "name": "i"
-                                            },
-                                            "init": {
-                                                "type": "Literal",
-                                                "value": 42,
-                                                "raw": "42"
-                                            }
-                                        }
-                                    ],
-                                    "kind": "var"
-                                }
-                            ]
-                        },
-                        "rest": null,
-                        "generator": false,
-                        "expression": false
-                    }
-                }
-            ]
+describe 'mangle:', ->
+    describe 'basic functionality:', ->
 
-        result1 = esshorten.mangle program,
-            distinguishFunctionExpressionScope: no
-        expect(result1.body[0].expression.id.name).to.equal 'a'
-        expect(result1.body[0].expression.body.body[0].declarations[0].id.name).to.equal 'b'
+        it 'does not touch top-level variable declarations', ->
+            program = esprima.parse 'var foo, bar, baz;'
 
+            result = esshorten.mangle program
+            expect(result.body[0].declarations[0].id.name).to.equal 'foo'
+            expect(result.body[0].declarations[1].id.name).to.equal 'bar'
+            expect(result.body[0].declarations[2].id.name).to.equal 'baz'
 
-        result2 = esshorten.mangle program,
-            distinguishFunctionExpressionScope: yes
-        expect(result2.body[0].expression.id.name).to.equal 'a'
-        expect(result2.body[0].expression.body.body[0].declarations[0].id.name).to.equal 'a'
+        it 'shortens local variable declarations', ->
+            program = esprima.parse 'function f() { var foo, bar, baz; }'
 
-        result3 = esshorten.mangle program
-        expect(result3.body[0].expression.id.name).to.equal 'a'
-        expect(result3.body[0].expression.body.body[0].declarations[0].id.name).to.equal 'b'
+            result = esshorten.mangle program
+            statements = result.body[0].body.body
+            expect(statements[0].declarations[0].id.name).to.equal 'a'
+            expect(statements[0].declarations[1].id.name).to.equal 'b'
+            expect(statements[0].declarations[2].id.name).to.equal 'c'
+
+        it 'shortens parameter names', ->
+            program = esprima.parse 'function f(foo, bar, baz) { foo = 1; bar = 2; baz = 3; }'
+
+            result = esshorten.mangle program
+            params = result.body[0].params
+            expect(params[0].name).to.equal 'a'
+            expect(params[1].name).to.equal 'b'
+            expect(params[2].name).to.equal 'c'
+            statements = result.body[0].body.body
+            expect(statements[0].expression.left.name).to.equal 'a'
+            expect(statements[1].expression.left.name).to.equal 'b'
+            expect(statements[2].expression.left.name).to.equal 'c'
+
+        it 'does not mangle implicit globals', ->
+            program = esprima.parse 'function f(bar) { foo = 1; bar = 2; baz = 3; }'
+
+            result = esshorten.mangle program
+            expect(result.body[0].params[0].name).to.equal 'a'
+            statements = result.body[0].body.body
+            expect(statements[0].expression.left.name).to.equal 'foo'
+            expect(statements[1].expression.left.name).to.equal 'a'
+            expect(statements[2].expression.left.name).to.equal 'baz'
+
+        it 'does not overwrite existing identifiers', ->
+            program = esprima.parse 'function f(foo) { function a(b) { c; } }'
+
+            result = esshorten.mangle program
+            f = result.body[0]
+            a = result.body[0].body.body[0]
+            expect(f.params[0].name).not.to.equal a.id.name
+            expect(f.params[0].name).not.to.equal a.body.body[0].expression.name
+            expect(a.id.name).not.to.equal a.body.body[0].expression.name
+
+    describe 'nested scope handling:', ->
+        it 'shortens nested function names', ->
+            program = esprima.parse 'function f() { function g() {} }'
+
+            result = esshorten.mangle program
+            expect(result.body[0].id.name).to.equal 'f'
+            expect(result.body[0].body.body[0].id.name).to.equal 'a'
+
+        it 'shortens parameters in nested functions', ->
+            program = esprima.parse 'function f(foo) { function g(foo) { foo; } }'
+
+            result = esshorten.mangle program
+            expect(result.body[0].params[0].name).to.equal 'a'
+            g = result.body[0].body.body[0]
+            expect(g.id.name).to.equal 'b'
+            expect(g.params[0].name).to.equal 'a'
+            expect(g.body.body[0].expression.name).to.equal 'a'
+
+        it 'shortens variable names in nested functions', ->
+            program = esprima.parse 'function f(foo) { var bar = 1; var baz = function inner(foo) { foo; var qux; } }'
+
+            result = esshorten.mangle program
+            f = result.body[0]
+            expect(f.id.name).to.equal 'f'
+            expect(f.params[0].name.length).to.equal 1
+            statements = f.body.body
+            expect(statements[0].declarations[0].id.name.length).to.equal 1
+            expect(statements[1].declarations[0].id.name.length).to.equal 1
+            inner = statements[1].declarations[0].init;
+            expect(inner.id.name.length).to.equal 1
+            expect(inner.params[0].name.length).to.equal 1
+            innerStatements = inner.body.body
+            expect(innerStatements[0].expression.name.length).to.equal 1
+            expect(innerStatements[1].declarations[0].id.name.length).to.equal 1
+
+    describe '`destructive` option:', ->
+        fixture = 'function f() { var foo, bar, baz; }'
+
+        it 'defaults to `true`', ->
+            program = esprima.parse fixture
+
+            result = esshorten.mangle program
+            expect(result).to.equal program
+
+        it 'accepts `true`', ->
+            program = esprima.parse fixture
+
+            result = esshorten.mangle program,
+                destructive: yes
+            expect(result).to.equal program
+
+        it 'accepts `false`', ->
+            program = esprima.parse fixture
+            json = JSON.stringify program
+
+            result = esshorten.mangle program,
+                destructive: no
+            expect(result).not.to.equal program
+            expect(JSON.stringify program).to.equal json
+
+    describe '`distinguishFunctionExpressionScope` option:', ->
+        program = esprima.parse '(function name() { var i = 42; });'
+
+        it 'defaults to `false`', ->
+            result = esshorten.mangle program,
+                destructive: no
+            expect(result.body[0].expression.id.name).to.equal 'a'
+            expect(result.body[0].expression.body.body[0].declarations[0].id.name).to.equal 'b'
+
+        it 'accepts `false`', ->
+            result = esshorten.mangle program,
+                destructive: no
+                distinguishFunctionExpressionScope: no
+            expect(result.body[0].expression.id.name).to.equal 'a'
+            expect(result.body[0].expression.body.body[0].declarations[0].id.name).to.equal 'b'
+
+        it 'accepts `true`', ->
+            result = esshorten.mangle program,
+                destructive: no
+                distinguishFunctionExpressionScope: yes
+            expect(result.body[0].expression.id.name).to.equal 'a'
+            expect(result.body[0].expression.body.body[0].declarations[0].id.name).to.equal 'a'
