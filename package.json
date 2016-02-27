@@ -4,7 +4,7 @@
   "main": "lib/esshorten.js",
   "version": "2.0.0-dev",
   "engines": {
-    "node": ">=0.12.0"
+    "node": ">=4.0.0"
   },
   "directories": {
     "lib": "./lib"
