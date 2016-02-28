@@ -56,12 +56,6 @@ describe 'utility:', ->
 
     describe 'generateNextName:', ->
         it 'generates names', ->
-            #XXX not valid identifiers - should we disallow these input values by throwing an error?
-            expect(utility.generateNextName '').to.equal '0'
-            expect(utility.generateNextName '0').to.equal '1'
-            expect(utility.generateNextName '8').to.equal '9'
-
-            expect(utility.generateNextName '9').to.equal 'a'
             expect(utility.generateNextName 'a').to.equal 'b'
             expect(utility.generateNextName 'b').to.equal 'c'
             expect(utility.generateNextName 'z').to.equal 'A'
