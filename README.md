@@ -17,7 +17,10 @@ esshorten.mangle(AST, {
     // If false, AST is copied deeply (default: true)
     destructive: false,
     // If false, avoid [JSC bug](https://github.com/mozilla/sweet.js/issues/138) (default: false)
-    distinguishFunctionExpressionScope: false
+    distinguishFunctionExpressionScope: false,
+    cmd: {
+      globals: ['module', 'require', 'exports', '__filename', '__dirname']
+    }
 });
 ```
 

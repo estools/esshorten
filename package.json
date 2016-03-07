@@ -1,8 +1,8 @@
 {
-  "name": "esshorten",
+  "name": "esshorten2",
   "description": "Shorten (mangle) names in JavaScript code",
   "main": "lib/esshorten.js",
-  "version": "1.1.2-dev",
+  "version": "1.1.3",
   "engines": {
     "node": ">=0.6.0"
   },
