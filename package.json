@@ -2,9 +2,9 @@
   "name": "esshorten",
   "description": "Shorten (mangle) names in JavaScript code",
   "main": "lib/esshorten.js",
-  "version": "1.1.2-dev",
+  "version": "2.0.0-dev",
   "engines": {
-    "node": ">=0.6.0"
+    "node": ">=0.12.0"
   },
   "directories": {
     "lib": "./lib"
