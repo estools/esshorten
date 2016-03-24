@@ -161,3 +161,26 @@ describe 'mangle:', ->
                 distinguishFunctionExpressionScope: yes
             expect(result.body[0].expression.id.name).to.equal 'a'
             expect(result.body[0].expression.body.body[0].declarations[0].id.name).to.equal 'a'
+
+    describe '`shouldRename` option:', ->
+        it 'renames by default', ->
+            program = esprima.parse '(function name() { var foo, bar, baz; });'
+            result = esshorten.mangle program
+
+            expect(result.body[0].expression.id.name).to.equal 'a'
+
+        it 'renames if it returns `true`', ->
+            program = esprima.parse '(function name() { var foo, bar, baz; });'
+            result = esshorten.mangle program,
+                shouldRename: (id) ->
+                    return id == 'name'
+
+            expect(result.body[0].expression.id.name).to.equal 'a'
+
+        it 'does not rename if it returns `false`', ->
+            program = esprima.parse '(function name() { var foo, bar, baz; });'
+            result = esshorten.mangle program,
+                shouldRename: (id) ->
+                    return id != 'name'
+
+            expect(result.body[0].expression.id.name).to.equal 'name'
