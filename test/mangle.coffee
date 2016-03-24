@@ -184,3 +184,11 @@ describe 'mangle:', ->
                     return id != 'name'
 
             expect(result.body[0].expression.id.name).to.equal 'name'
+
+    describe '`renamePrefix` option:', ->
+        program = esprima.parse '(function name() { var i = 42; });'
+
+        it 'prefixes identifier with the given value', ->
+            result = esshorten.mangle program,
+                renamePrefix: 'foo_'
+            expect(result.body[0].expression.id.name.indexOf('foo_')).to.equal 0
