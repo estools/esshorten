@@ -186,9 +186,17 @@ describe 'mangle:', ->
             expect(result.body[0].expression.id.name).to.equal 'name'
 
     describe '`renamePrefix` option:', ->
-        program = esprima.parse '(function name() { var i = 42; });'
 
         it 'prefixes identifier with the given value', ->
+            program = esprima.parse '(function name() { var i = 42; });'
             result = esshorten.mangle program,
                 renamePrefix: 'foo_'
             expect(result.body[0].expression.id.name.indexOf('foo_')).to.equal 0
+
+        it 'prefixes identifier inside IIFE without multiplying prefixes', ->
+            program = esprima.parse '(function name() { var i = 42; var a = 5; })();'
+            result = esshorten.mangle program,
+                renamePrefix: 'foo_'
+
+            expect(result.body[0].expression.callee.body.body[1].declarations[0].id.name.indexOf('foo_')).to.equal 0
+            expect(result.body[0].expression.callee.body.body[1].declarations[0].id.name.indexOf('foo_foo_')).to.equal -1
