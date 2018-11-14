@@ -79,6 +79,14 @@ describe 'mangle:', ->
             expect(f.params[0].name).not.to.equal a.body.body[0].expression.name
             expect(a.id.name).not.to.equal a.body.body[0].expression.name
 
+        it 'sort for node11', ->
+            program = esprima.parse 'function f(a1, a2, a3, a4, a5) { var b1, b2, b3, b4, b5 }'
+
+            result = esshorten.mangle program
+            expect(result.body[0].params[0].name).to.equal 'a'
+            expect(result.body[0].body.body[0].declarations[0].id.name).to.equal 'f'
+
+
     describe 'nested scope handling:', ->
         it 'shortens nested function names', ->
             program = esprima.parse 'function f() { function g() {} }'
